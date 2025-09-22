@@ -123,14 +123,10 @@
                 @forelse ($videos as $v)
                 <div class="rounded-xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-zinc-900">
                     <div class="aspect-video w-full overflow-hidden" style="background: linear-gradient(135deg,#f5f5f5,#eaeaea);">
-                        @if(!empty($v->poster_path))
-                            <img src="{{ Storage::disk('minio')->url($v->poster_path) }}" 
-                                 alt="poster" 
-                                 class="h-full w-full object-cover" 
-                                 onerror="this.src='/image.png'; this.onerror=null;" />
-                        @else
-                            <img src="/image.png" alt="default poster" class="h-full w-full object-cover" />
-                        @endif
+                        <img src="{{ $v->getPosterUrl() }}"
+                             alt="poster"
+                             class="h-full w-full object-cover"
+                             onerror="this.src='{{ asset('image.png') }}'; this.onerror=null;" />
                     </div>
                     <div class="p-3">
                         <div class="font-semibold">{{ $v->title }}</div>

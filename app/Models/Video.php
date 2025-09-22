@@ -2,10 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Storage;
 
@@ -141,18 +139,26 @@ class Video extends Model
         }
 
         try {
-            // Generate signed URL for MinIO with 24 hour expiry
-            return Storage::disk('minio')->temporaryUrl(
-                $this->poster_path,
-                now()->addDay()
-            );
-        } catch (\Exception $e) {
-            // Fallback to direct URL if signing fails
-            try {
-                return Storage::disk('minio')->url($this->poster_path);
-            } catch (\Exception $e) {
+            $disk = Storage::disk('minio');
+
+            // Check if file exists
+            if (!$disk->exists($this->poster_path)) {
                 return asset('image.png');
             }
+
+            // For MinIO (S3-compatible), generate URL manually
+            $config = config('filesystems.disks.minio');
+            $endpoint = rtrim($config['endpoint'], '/');
+            $bucket = $config['bucket'];
+
+            return "{$endpoint}/{$bucket}/{$this->poster_path}";
+
+        } catch (\Exception $e) {
+            \Log::warning('Failed to generate poster URL: ' . $e->getMessage(), [
+                'video_id' => $this->id,
+                'poster_path' => $this->poster_path
+            ]);
+            return asset('image.png');
         }
     }
 }
