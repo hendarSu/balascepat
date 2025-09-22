@@ -1,7 +1,9 @@
 <x-layouts.app :title="__('Video')">
     <div class="space-y-4">
         @isset($error)
-            <flux:alert icon="shield-exclamation" variant="danger">{{ $errorMessage ?? $error }}</flux:alert>
+            <div class="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-700/60 dark:bg-red-900/30 dark:text-red-200">
+                {{ $errorMessage ?? $error }}
+            </div>
         @else
             <flux:heading>{{ $video->title }}</flux:heading>
             <div class="aspect-video overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700">
@@ -27,4 +29,3 @@
     </script>
     @endempty
 </x-layouts.app>
-

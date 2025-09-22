@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Storage;
 
 class Video extends Model
 {
@@ -31,6 +32,15 @@ class Video extends Model
         'export_expires_at',
         'embed_settings',
         'view_count',
+        'progress',
+        'duration_seconds',
+        'width',
+        'height',
+        'poster_path',
+        'sprite_path',
+        'subtitles',
+        'chapters',
+        'watermark',
     ];
 
     protected $casts = [
@@ -41,6 +51,13 @@ class Video extends Model
         'embed_settings' => 'array',
         'export_expires_at' => 'datetime',
         'view_count' => 'integer',
+        'progress' => 'integer',
+        'duration_seconds' => 'integer',
+        'width' => 'integer',
+        'height' => 'integer',
+        'subtitles' => 'array',
+        'chapters' => 'array',
+        'watermark' => 'array',
     ];
 
     public function user()
@@ -116,5 +133,26 @@ class Video extends Model
         $this->view_count = ($this->view_count ?? 0) + 1;
         $this->save();
     }
-}
 
+    public function getPosterUrl(): string
+    {
+        if (empty($this->poster_path)) {
+            return asset('image.png');
+        }
+
+        try {
+            // Generate signed URL for MinIO with 24 hour expiry
+            return Storage::disk('minio')->temporaryUrl(
+                $this->poster_path,
+                now()->addDay()
+            );
+        } catch (\Exception $e) {
+            // Fallback to direct URL if signing fails
+            try {
+                return Storage::disk('minio')->url($this->poster_path);
+            } catch (\Exception $e) {
+                return asset('image.png');
+            }
+        }
+    }
+}

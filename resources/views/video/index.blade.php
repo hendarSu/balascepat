@@ -37,8 +37,9 @@
                 @php $tab = fn($label,$value)=>[ 'label'=>$label, 'value'=>$value ]; @endphp
                 @foreach ([
                     $tab(__('All'),''),
-                    $tab(__('Completed'),'completed'),
+                    $tab(__('Queued'),'queued'),
                     $tab(__('Processing'),'processing'),
+                    $tab(__('Completed'),'completed'),
                     $tab(__('Uploaded'),'uploaded'),
                     $tab(__('Failed'),'failed'),
                 ] as $t)
@@ -63,6 +64,7 @@
                         <select name="status" class="w-full rounded-md border border-neutral-300 bg-white px-2 py-2 text-sm dark:border-neutral-700 dark:bg-zinc-900">
                             @php $s = $filters['status'] ?? '' @endphp
                             <option value="">{{ __('All Status') }}</option>
+                            <option value="queued" @selected($s==='queued')>Queued</option>
                             <option value="uploaded" @selected($s==='uploaded')>Uploaded</option>
                             <option value="processing" @selected($s==='processing')>Processing</option>
                             <option value="completed" @selected($s==='completed')>Completed</option>
@@ -103,8 +105,81 @@
             </form>
         </div>
 
+        <!-- View Toggle -->
+        <div class="flex items-center justify-end gap-2">
+            <button id="btn-grid" class="inline-flex items-center rounded-md border px-3 py-1.5 text-xs
+                {{ ($viewMode ?? 'grid')==='grid' ? 'border-neutral-900 text-neutral-900 dark:border-neutral-100 dark:text-neutral-100' : 'border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300' }}">
+                Grid
+            </button>
+            <button id="btn-list" class="inline-flex items-center rounded-md border px-3 py-1.5 text-xs
+                {{ ($viewMode ?? 'grid')==='list' ? 'border-neutral-900 text-neutral-900 dark:border-neutral-100 dark:text-neutral-100' : 'border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300' }}">
+                List
+            </button>
+        </div>
+
+        <!-- Grid -->
+        <div id="grid-view" class="{{ ($viewMode ?? 'grid')==='grid' ? '' : 'hidden' }}">
+            <div class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                @forelse ($videos as $v)
+                <div class="rounded-xl border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-zinc-900">
+                    <div class="aspect-video w-full overflow-hidden" style="background: linear-gradient(135deg,#f5f5f5,#eaeaea);">
+                        @if(!empty($v->poster_path))
+                            <img src="{{ Storage::disk('minio')->url($v->poster_path) }}" 
+                                 alt="poster" 
+                                 class="h-full w-full object-cover" 
+                                 onerror="this.src='/image.png'; this.onerror=null;" />
+                        @else
+                            <img src="/image.png" alt="default poster" class="h-full w-full object-cover" />
+                        @endif
+                    </div>
+                    <div class="p-3">
+                        <div class="font-semibold">{{ $v->title }}</div>
+                        <div class="mt-1 line-clamp-2 text-xs text-neutral-500">{{ $v->description ?? $v->original_filename }}</div>
+                        <div class="mt-3 flex items-center justify-between text-xs">
+                            <div class="text-neutral-500">{{ number_format(($v->file_size ?? 0)/1024/1024,2) }} MB</div>
+                            <div>
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium
+                                    {{ match($v->status){
+                                        'queued' => 'bg-sky-100 text-sky-800',
+                                        'processing' => 'bg-blue-100 text-blue-800',
+                                        'completed' => 'bg-green-100 text-green-800',
+                                        'failed' => 'bg-red-100 text-red-800',
+                                        default => 'bg-yellow-100 text-yellow-800'
+                                    } }}
+                                ">{{ ucfirst($v->status) }}</span>
+                            </div>
+                        </div>
+                        <div class="mt-3 flex items-center justify-between">
+                            @if($v->status === 'completed' && $v->hls_path)
+                                <button class="btn-preview inline-flex items-center rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-zinc-900 dark:text-neutral-200" data-playlist-url="{{ route('video.playlist', ['playlist' => basename($v->hls_path)]) }}">Preview</button>
+                            @else
+                                <span class="text-xs text-neutral-400">&nbsp;</span>
+                            @endif
+                            <div class="flex items-center gap-2">
+                                <button class="btn-edit inline-flex items-center rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-zinc-900 dark:text-neutral-200" data-id="{{ $v->id }}" data-title="{{ $v->title }}" data-description="{{ $v->description }}">Edit</button>
+                                <div class="copy-dropdown relative">
+                                    <button class="copy-dropdown-toggle inline-flex items-center rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-neutral-700 dark:bg-zinc-900 dark:text-neutral-200" @disabled(!$v->is_public)>
+                                        Copy
+                                        <svg class="ms-1 size-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08z" clip-rule="evenodd"/></svg>
+                                    </button>
+                                    <div class="copy-dropdown-menu absolute right-0 z-50 mt-1 hidden w-36 overflow-hidden rounded-md border border-neutral-200 bg-white p-1 text-xs shadow-lg dark:border-neutral-700 dark:bg-zinc-900">
+                                        <button class="btn-copy-link block w-full rounded px-2 py-1.5 text-left hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed dark:hover:bg-zinc-800" data-id="{{ $v->id }}" data-public="{{ $v->is_public ? 1 : 0 }}" @disabled(!$v->is_public)>Copy Link</button>
+                                        <button class="btn-copy-embed block w-full rounded px-2 py-1.5 text-left hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed dark:hover:bg-zinc-800" data-id="{{ $v->id }}" data-public="{{ $v->is_public ? 1 : 0 }}" @disabled(!$v->is_public)>Copy Embed</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @empty
+                    <div class="text-sm text-neutral-500">Belum ada video.</div>
+                @endforelse
+            </div>
+            <div class="px-1 py-3">{{ $videos->withQueryString()->links() }}</div>
+        </div>
+
         <!-- Table -->
-        <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-900">
+        <div id="list-view" class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-900 {{ ($viewMode ?? 'grid')==='list' ? '' : 'hidden' }}">
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
                     <thead class="sticky top-0 z-[1] text-left bg-neutral-50 dark:bg-neutral-800">
@@ -125,15 +200,22 @@
                                 <div class="font-medium" id="title-{{ $v->id }}">{{ $v->title }}</div>
                                 <div class="text-xs text-neutral-500" id="desc-{{ $v->id }}">{{ $v->description ? \Illuminate\Support\Str::limit($v->description, 80) : $v->original_filename }}</div>
                             </td>
-                            <td class="px-4 py-3">
-                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+                            <td class="px-4 py-3" id="status-cell-{{ $v->id }}">
+                                <span id="status-badge-{{ $v->id }}" class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
                                     @class([
+                                        'bg-sky-100 text-sky-800' => $v->status==='queued',
                                         'bg-yellow-100 text-yellow-800' => $v->status==='uploaded',
                                         'bg-blue-100 text-blue-800' => $v->status==='processing',
                                         'bg-green-100 text-green-800' => $v->status==='completed',
                                         'bg-red-100 text-red-800' => $v->status==='failed',
                                     ])
                                 ">{{ ucfirst($v->status) }}</span>
+                                @if(in_array($v->status,['queued','processing']))
+                                    <div class="mt-1 h-1.5 w-28 overflow-hidden rounded bg-neutral-200 dark:bg-neutral-800">
+                                        <div class="h-1.5 rounded bg-blue-500" id="bar-{{ $v->id }}" style="width: {{ (int)($v->progress ?? 0) }}%"></div>
+                                    </div>
+                                    <div class="mt-0.5 text-[10px] text-neutral-500" id="pct-{{ $v->id }}">{{ (int)($v->progress ?? 0) }}%</div>
+                                @endif
                             </td>
                             <td class="px-4 py-3">{{ number_format(($v->file_size ?? 0)/1024/1024, 2) }} MB</td>
                             <td class="px-4 py-3" id="public-{{ $v->id }}">{{ $v->is_public ? 'Ya' : 'Tidak' }}</td>
@@ -217,6 +299,21 @@
     }
 
     document.addEventListener('click', async (e)=>{
+        // dropdown toggle
+        const toggle = e.target.closest('.copy-dropdown-toggle');
+        if(toggle){
+            e.preventDefault();
+            const dd = toggle.closest('.copy-dropdown');
+            const menu = dd?.querySelector('.copy-dropdown-menu');
+            // close other menus
+            document.querySelectorAll('.copy-dropdown-menu').forEach(m=>{ if(m!==menu) m.classList.add('hidden'); });
+            if(menu){ menu.classList.toggle('hidden'); }
+            return;
+        }
+        // click outside to close
+        if(!e.target.closest('.copy-dropdown')){
+            document.querySelectorAll('.copy-dropdown-menu').forEach(m=> m.classList.add('hidden'));
+        }
         const btnEdit = e.target.closest('.btn-edit');
         if(btnEdit){
             e.preventDefault();
@@ -237,8 +334,14 @@
             btn.setAttribute('disabled','true');
             btn.textContent = 'Converting...';
             try {
-                const data = await postJson(@json(route('video.convert')), { video_id: id, encryption_type: 'single' });
-                if(data.success){ toast('Konversi berhasil', 'success'); window.location.reload(); } else { toast(data.message || 'Convert failed', 'error'); }
+                const data = await postJson(@json(route('video.convert')), { video_id: id });
+                if(data.success){
+                    toast('Ditambahkan ke antrian', 'success');
+                    // Update status cell to show queued + progress 0%
+                    setQueuedUI(id);
+                } else {
+                    toast(data.message || 'Convert failed', 'error');
+                }
             } catch(err){ toast(err.message, 'error'); }
             finally { btn.removeAttribute('disabled'); btn.textContent = label; }
         }
@@ -295,6 +398,96 @@
             closeEditModal();
         }
     });
+
+    // Poll progress every 5s
+    async function pollProgress(){
+        try{
+            const res = await fetch(@json(route('video.progress')));
+            const json = await res.json();
+            (json.data||[]).forEach(v => {
+                const bar = document.getElementById('bar-'+v.id);
+                const pct = document.getElementById('pct-'+v.id);
+                if(!bar || !pct){ setQueuedUI(v.id); }
+                const bar2 = document.getElementById('bar-'+v.id);
+                const pct2 = document.getElementById('pct-'+v.id);
+                if(bar2){ bar2.style.width = (v.progress||0)+'%'; }
+                if(pct2){ pct2.textContent = (v.progress||0)+'%'; }
+            });
+        }catch(e){}
+        setTimeout(pollProgress, 5000);
+    }
+    pollProgress();
+
+    function setQueuedUI(id){
+        const cell = document.getElementById('status-cell-'+id);
+        const badge = document.getElementById('status-badge-'+id);
+        if(badge){
+            badge.textContent = 'Queued';
+            badge.className = 'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-sky-100 text-sky-800';
+        }
+        if(cell && !document.getElementById('bar-'+id)){
+            const barWrap = document.createElement('div');
+            barWrap.className = 'mt-1 h-1.5 w-28 overflow-hidden rounded bg-neutral-200 dark:bg-neutral-800';
+            const bar = document.createElement('div');
+            bar.id = 'bar-'+id; bar.className='h-1.5 rounded bg-blue-500'; bar.style.width='0%';
+            barWrap.appendChild(bar);
+            const pct = document.createElement('div');
+            pct.id = 'pct-'+id; pct.className='mt-0.5 text-[10px] text-neutral-500'; pct.textContent='0%';
+            cell.appendChild(barWrap); cell.appendChild(pct);
+        }
+    }
+
+    // Realtime via Echo (optional)
+    if (window.Echo) {
+        try {
+            window.Echo.channel('videos')
+                .listen('.video.progress', (e) => {
+                    if(!e || !e.id) return;
+                    setQueuedUI(e.id);
+                    const bar = document.getElementById('bar-'+e.id);
+                    const pct = document.getElementById('pct-'+e.id);
+                    if(bar){ bar.style.width = (e.progress||0)+'%'; }
+                    if(pct){ pct.textContent = (e.progress||0)+'%'; }
+                })
+                .listen('.video.status', (e) => {
+                    if(!e || !e.id) return;
+                    const badge = document.getElementById('status-badge-'+e.id);
+                    if(!badge) return;
+                    const map = {
+                        queued: ['bg-sky-100 text-sky-800','Queued'],
+                        processing: ['bg-blue-100 text-blue-800','Processing'],
+                        completed: ['bg-green-100 text-green-800','Completed'],
+                        failed: ['bg-red-100 text-red-800','Failed'],
+                        uploaded: ['bg-yellow-100 text-yellow-800','Uploaded'],
+                    };
+                    const cfg = map[e.status] || map.uploaded;
+                    badge.className = 'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium '+cfg[0];
+                    badge.textContent = cfg[1];
+                    if(e.status==='completed' || e.status==='failed'){
+                        const bar = document.getElementById('bar-'+e.id);
+                        const pct = document.getElementById('pct-'+e.id);
+                        if(bar){ bar.parentElement?.remove(); }
+                        if(pct){ pct.remove(); }
+                    } else {
+                        setQueuedUI(e.id);
+                    }
+                });
+        } catch (err) {
+            console.warn('Echo not ready', err);
+        }
+    }
+
+    // View toggle + persist to DB
+    function setView(mode){
+        const grid = document.getElementById('grid-view');
+        const list = document.getElementById('list-view');
+        if(mode==='grid'){ grid.classList.remove('hidden'); list.classList.add('hidden'); }
+        else { list.classList.remove('hidden'); grid.classList.add('hidden'); }
+        // persist
+        fetch(@json(route('video.viewmode')), { method:'POST', headers:{'Content-Type':'application/json','X-CSRF-TOKEN':csrf}, body: JSON.stringify({mode}) }).catch(()=>{});
+    }
+    document.getElementById('btn-grid')?.addEventListener('click', (e)=>{ e.preventDefault(); setView('grid'); });
+    document.getElementById('btn-list')?.addEventListener('click', (e)=>{ e.preventDefault(); setView('list'); });
 
     // Preview modal functions
     let hlsInstance = null;

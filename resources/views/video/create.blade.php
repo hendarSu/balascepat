@@ -38,7 +38,7 @@
                     <input id="video-input" class="hidden" type="file" name="video" accept="video/*" required />
                     <div id="video-dropzone" class="mt-2 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-neutral-300 p-8 text-center text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-zinc-800">
                         <div class="text-sm"><span class="font-medium text-neutral-900 dark:text-neutral-100">{{ __('Pilih file') }}</span> {{ __('atau tarik & lepas di sini') }}</div>
-                        <div class="text-xs text-neutral-400">MP4, MOV, AVI, WMV — max 100MB</div>
+                        <div class="text-xs text-neutral-400">MP4, MOV, AVI, WMV — max 100KB</div>
                         <div id="video-selected" class="hidden rounded-md bg-neutral-100 px-2 py-1 text-xs text-neutral-700 dark:bg-zinc-800 dark:text-neutral-200"></div>
                     </div>
                 </flux:field>
@@ -88,6 +88,12 @@
     uploadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(uploadForm);
+        // Client-side size validation 100KB
+        if(!inputVideo.files.length){ toast('Silakan pilih file video', 'warning'); return; }
+        if(inputVideo.files[0].size > 100 * 1024){
+            toast('Ukuran file melebihi 100KB', 'error');
+            return;
+        }
         if(!inputVideo.files.length){ toast('Silakan pilih file video', 'warning'); return; }
         btnUpload.setAttribute('disabled', 'true');
         btnUpload.textContent = 'Uploading...';

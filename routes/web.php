@@ -3,12 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 use App\Http\Controllers\VideoController;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::view('dashboard', 'dashboard')
+Route::get('dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
@@ -26,14 +27,22 @@ require __DIR__.'/auth.php';
 Route::middleware(['auth'])->group(function () {
     Route::get('/videos', [VideoController::class, 'index'])->name('video.index');
     Route::get('/videos/create', [VideoController::class, 'create'])->name('video.create');
+    Route::view('/videos/playground', 'video.playground')->name('video.playground');
     Route::post('/videos/upload', [VideoController::class, 'uploadVideo'])->name('video.upload');
     Route::post('/videos/convert', [VideoController::class, 'convertToEncryptedHLS'])->name('video.convert');
+    Route::post('/videos/view', [VideoController::class, 'setViewMode'])->name('video.viewmode');
+    Route::get('/videos/progress', function () {
+        $videos = auth()->user()->videos()->whereIn('status', ['queued','processing'])->get(['id','status','progress']);
+        return response()->json(['data' => $videos]);
+    })->name('video.progress');
 
     Route::post('/videos/export/generate', [VideoController::class, 'generateExportLink'])->name('video.export.generate');
     Route::post('/videos/export/revoke', [VideoController::class, 'revokeExportAccess'])->name('video.export.revoke');
     Route::get('/videos/{id}/export-link', [VideoController::class, 'exportLink'])->name('video.export.link');
     Route::get('/videos/{id}/embed-code', [VideoController::class, 'exportEmbed'])->name('video.export.embed');
     Route::post('/videos/update-meta', [VideoController::class, 'updateMeta'])->name('video.update.meta');
+    Route::post('/videos/subtitle', [VideoController::class, 'uploadSubtitle'])->name('video.subtitle.upload');
+    Route::post('/videos/chapters', [VideoController::class, 'uploadChapters'])->name('video.chapters.upload');
 });
 
 // HLS serving and players

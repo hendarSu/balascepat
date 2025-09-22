@@ -27,6 +27,16 @@ return new class extends Migration {
             $table->timestamp('export_expires_at')->nullable();
             $table->json('embed_settings')->nullable();
             $table->unsignedBigInteger('view_count')->default(0);
+            // Extended metadata & processing
+            $table->unsignedInteger('progress')->default(0);
+            $table->unsignedInteger('duration_seconds')->nullable();
+            $table->unsignedInteger('width')->nullable();
+            $table->unsignedInteger('height')->nullable();
+            $table->string('poster_path')->nullable();
+            $table->string('sprite_path')->nullable();
+            $table->json('subtitles')->nullable(); // [{lang,label,path}]
+            $table->json('chapters')->nullable(); // structure or path
+            $table->json('watermark')->nullable(); // {text, logo_path, position}
             $table->timestamps();
         });
     }
@@ -36,4 +46,3 @@ return new class extends Migration {
         Schema::dropIfExists('videos');
     }
 };
-

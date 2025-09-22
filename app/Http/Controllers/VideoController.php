@@ -41,7 +41,7 @@ class VideoController extends Controller
 
         // Status filter
         if ($status = $request->get('status')) {
-            if (in_array($status, ['uploaded','processing','completed','failed'])) {
+            if (in_array($status, ['uploaded','queued','processing','completed','failed'])) {
                 $query->where('status', $status);
             }
         }
@@ -77,6 +77,8 @@ class VideoController extends Controller
 
         $videos = $query->paginate($perPage)->withQueryString();
 
+        $currentView = $user->video_view ?? 'grid';
+
         return view('video.index', [
             'videos' => $videos,
             'filters' => [
@@ -86,7 +88,19 @@ class VideoController extends Controller
                 'sort' => $sort,
                 'per_page' => $perPage,
             ],
+            'viewMode' => $currentView,
         ]);
+    }
+
+    public function setViewMode(Request $request)
+    {
+        $data = $request->validate([
+            'mode' => 'required|in:list,grid',
+        ]);
+        $user = $request->user();
+        $user->video_view = $data['mode'];
+        $user->save();
+        return response()->json(['success' => true, 'mode' => $user->video_view]);
     }
 
     public function create()
@@ -101,7 +115,7 @@ class VideoController extends Controller
     {
         try {
             $request->validate([
-                'video' => 'required|file|mimes:mp4,avi,mov,wmv|max:102400',
+                'video' => 'required|file|mimes:mp4,avi,mov,wmv',
                 'title' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'is_public' => 'boolean'
@@ -147,106 +161,47 @@ class VideoController extends Controller
     public function convertToEncryptedHLS(Request $request)
     {
         try {
-            $request->validate([
+            $validated = $request->validate([
                 'video_id' => 'required|exists:videos,id',
-                'encryption_type' => 'required|in:single,rotating',
+                'watermark_text' => 'nullable|string|max:100',
+                'watermark_logo' => 'nullable|string',
+                'watermark_position' => 'nullable|in:top-left,top-right,bottom-left,bottom-right',
             ]);
 
-            $video = Video::findOrFail($request->video_id);
+            $video = Video::findOrFail($validated['video_id']);
 
             if ($video->user_id !== auth()->id()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized access to video'
-                ], 403);
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
             }
 
-            if (empty($video->file_path) || $video->file_path === '0' || !Storage::disk('minio')->exists($video->file_path)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid or missing video file path.'
-                ], 400);
+            if (empty($video->file_path) || !Storage::disk('minio')->exists($video->file_path)) {
+                return response()->json(['success' => false, 'message' => 'Invalid or missing video file path.'], 400);
             }
 
-            $video->update(['status' => 'processing']);
-            $outputName = 'video_' . $video->id . '_' . time();
-            $encryptionKeys = [];
+            $options = [];
+            if (!empty($validated['watermark_text']) || !empty($validated['watermark_logo'])) {
+                $options['watermark'] = [
+                    'text' => $validated['watermark_text'] ?? null,
+                    'logo_path' => $validated['watermark_logo'] ?? null,
+                    'position' => $validated['watermark_position'] ?? 'bottom-right',
+                ];
+                $video->watermark = $options['watermark'];
+            }
 
-            $lowBitrate = (new X264('aac', 'libx264'))
-                ->setKiloBitrate(500)
-                ->setAudioKiloBitrate(64);
+            $video->status = 'queued';
+            $video->progress = 0;
+            $video->save();
 
-            $midBitrate = (new X264('aac', 'libx264'))
-                ->setKiloBitrate(1000)
-                ->setAudioKiloBitrate(128);
-
-            $highBitrate = (new X264('aac', 'libx264'))
-                ->setKiloBitrate(2000)
-                ->setAudioKiloBitrate(192);
-
-            if ($request->encryption_type === 'single') {
-                $encryptionKey = HLSExporter::generateEncryptionKey();
-
-                $keyFileName = $outputName . '.key';
-                Storage::disk('minio')->put(
-                    "keys/{$keyFileName}",
-                    $encryptionKey
-                );
-                $encryptionKeys[] = $keyFileName;
-
-                FFMpeg::fromDisk('minio')
-                    ->open($video->file_path)
-                    ->exportForHLS()
-                    ->withEncryptionKey($encryptionKey, $keyFileName)
-                    ->addFormat($lowBitrate)
-                    ->addFormat($midBitrate)
-                    ->addFormat($highBitrate)
-                    ->toDisk('minio')
-                    ->save("hls/{$outputName}.m3u8");
+            // Dispatch conversion job (sync for local/dev if queue set to 'sync')
+            if (config('queue.default') === 'sync') {
+                \App\Jobs\ConvertVideoJob::dispatchSync($video->id, $options);
             } else {
-                FFMpeg::fromDisk('minio')
-                    ->open($video->file_path)
-                    ->exportForHLS()
-                    ->withRotatingEncryptionKey(function ($filename, $contents) use (&$encryptionKeys) {
-                        Storage::disk('minio')->put(
-                            "keys/{$filename}",
-                            $contents
-                        );
-                        $encryptionKeys[] = $filename;
-                    })
-                    ->addFormat($lowBitrate)
-                    ->addFormat($midBitrate)
-                    ->addFormat($highBitrate)
-                    ->toDisk('minio')
-                    ->save("hls/{$outputName}.m3u8");
+                \App\Jobs\ConvertVideoJob::dispatch($video->id, $options);
             }
 
-            $video->update([
-                'status' => 'completed',
-                'hls_path' => "hls/{$outputName}.m3u8",
-                'encryption_type' => $request->encryption_type,
-                'encryption_keys' => $encryptionKeys
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Video berhasil dikonversi ke HLS dengan enkripsi',
-                'data' => [
-                    'video_id' => $video->id,
-                    'playlist_url' => $video->getPlaylistUrl(),
-                    'encryption_type' => $request->encryption_type,
-                    'output_name' => $outputName
-                ]
-            ]);
-        } catch (\Exception $e) {
-            if (isset($video)) {
-                $video->update(['status' => 'failed']);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error: ' . $e->getMessage()
-            ], 500);
+            return response()->json(['success' => true, 'message' => 'Video queued for conversion', 'data' => ['video_id' => $video->id]]);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -843,19 +798,73 @@ class VideoController extends Controller
             $referrer = $request->input('referrer', 'direct');
             $userAgent = $request->input('user_agent', $request->userAgent());
 
-            Log::info('Video analytics event', [
-                'video_id' => $video->id,
-                'event' => $event,
-                'referrer' => $referrer,
-                'user_agent' => $userAgent,
-                'ip' => $request->ip(),
-                'timestamp' => now()
-            ]);
+            // Persist basic analytics for dashboard
+            try {
+                \App\Models\VideoEvent::create([
+                    'video_id' => $video->id,
+                    'event' => (string) $event,
+                    'referrer' => $referrer,
+                    'user_agent' => $userAgent,
+                    'ip' => $request->ip(),
+                ]);
+            } catch (\Throwable $e) {
+                // ignore analytics DB errors
+            }
 
             return response()->json(['success' => true]);
 
         } catch (\Exception $e) {
             return response()->json(['success' => false], 500);
         }
+    }
+
+    // Upload WebVTT subtitle and attach to video
+    public function uploadSubtitle(Request $request)
+    {
+        $data = $request->validate([
+            'video_id' => 'required|exists:videos,id',
+            'lang' => 'required|string|max:10',
+            'label' => 'nullable|string|max:50',
+            'file' => 'required|file|mimetypes:text/vtt,text/plain',
+        ]);
+
+        $video = Video::findOrFail($data['video_id']);
+        if ($video->user_id !== $request->user()->id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $fname = "subtitles/video_{$video->id}/{$data['lang']}.vtt";
+        Storage::disk('minio')->put($fname, file_get_contents($request->file('file')->getRealPath()));
+
+        $subs = $video->subtitles ?? [];
+        // remove existing same lang
+        $subs = array_values(array_filter($subs, fn($s) => ($s['lang'] ?? '') !== $data['lang']));
+        $subs[] = [
+            'lang' => $data['lang'],
+            'label' => $data['label'] ?? strtoupper($data['lang']),
+            'path' => $fname,
+        ];
+        $video->subtitles = $subs;
+        $video->save();
+
+        return response()->json(['success' => true, 'message' => 'Subtitle uploaded', 'data' => $subs]);
+    }
+
+    // Upload chapters (WebVTT)
+    public function uploadChapters(Request $request)
+    {
+        $data = $request->validate([
+            'video_id' => 'required|exists:videos,id',
+            'file' => 'required|file|mimetypes:text/vtt,text/plain',
+        ]);
+        $video = Video::findOrFail($data['video_id']);
+        if ($video->user_id !== $request->user()->id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+        $fname = "chapters/video_{$video->id}.vtt";
+        Storage::disk('minio')->put($fname, file_get_contents($request->file('file')->getRealPath()));
+        $video->chapters = ['path' => $fname];
+        $video->save();
+        return response()->json(['success' => true, 'message' => 'Chapters uploaded', 'data' => $video->chapters]);
     }
 }
