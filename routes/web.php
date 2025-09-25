@@ -60,3 +60,13 @@ Route::get('/hls/{token}/key/{key}', [VideoController::class, 'serveKeyWithToken
 Route::get('/hls/{token}/segment/{filename}', [VideoController::class, 'serveSegmentFile'])->name('video.segment.file');
 
 Route::post('/analytics/{token}', [VideoController::class, 'recordAnalytics'])->name('video.analytics');
+
+// Notification Channel routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/notification-channels', App\Livewire\NotificationChannel\Index::class)->name('notification-channel.index');
+    Route::get('/notification-channels/create', App\Livewire\NotificationChannel\Form::class)->name('notification-channel.create');
+    Route::get('/notification-channels/{id}/edit', App\Livewire\NotificationChannel\Form::class)->name('notification-channel.edit');
+    // WA Unofficial utilities
+    Route::get('/wa/session', App\Livewire\Wa\Session::class)->name('wa.session');
+    Route::view('/wa/automation', 'wa.automation')->name('wa.automation');
+});
