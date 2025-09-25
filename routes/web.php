@@ -69,4 +69,21 @@ Route::middleware(['auth'])->group(function () {
     // WA Unofficial utilities
     Route::get('/wa/session', App\Livewire\Wa\Session::class)->name('wa.session');
     Route::view('/wa/automation', 'wa.automation')->name('wa.automation');
+    Route::view('/wa/docs', 'wa.docs')->name('wa.docs');
+
+    // Broadcasts
+    Route::get('/broadcasts', App\Livewire\Broadcast\Form::class)->name('broadcast.form');
+    Route::get('/broadcasts/history', App\Livewire\Broadcast\Index::class)->name('broadcast.index');
+    Route::get('/broadcasts/{id}', App\Livewire\Broadcast\Show::class)->name('broadcast.show');
+
+    // Customer Groups
+    Route::get('/customer-groups', App\Livewire\CustomerGroup\Index::class)->name('customer-group.index');
+    Route::get('/customer-groups/create', App\Livewire\CustomerGroup\Form::class)->name('customer-group.create');
+    Route::get('/customer-groups/{id}/edit', App\Livewire\CustomerGroup\Form::class)->name('customer-group.edit');
+
+    // Customers
+    Route::get('/customers', App\Livewire\Customer\Index::class)->name('customer.index');
+    Route::get('/customers/create', App\Livewire\Customer\Form::class)->name('customer.create');
+    Route::get('/customers/{id}/edit', App\Livewire\Customer\Form::class)->name('customer.edit');
+    Route::get('/customers/import', App\Livewire\Customer\Import::class)->name('customer.import');
 });

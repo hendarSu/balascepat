@@ -21,9 +21,28 @@
                                    :current="request()->routeIs('notification-channel.*')" wire:navigate>
                     {{ __('Notification Setting') }}
                 </flux:navlist.item>
+                <flux:navlist.item icon="megaphone" :href="route('broadcast.form')"
+                                   :current="request()->routeIs('broadcast.form')" wire:navigate>
+                    {{ __('Broadcast') }}
+                </flux:navlist.item>
+                <flux:navlist.item icon="clock" :href="route('broadcast.index')"
+                                   :current="request()->routeIs('broadcast.index') || request()->routeIs('broadcast.show')"
+                                   wire:navigate>
+                    {{ __('Broadcast History') }}
+                </flux:navlist.item>
                 {{-- <flux:navlist.item icon="film" :href="route('video.index')"
                                    :current="request()->routeIs('video.*')" wire:navigate>{{ __('Videos') }}
                 </flux:navlist.item> --}}
+                <flux:navlist.group :heading="__('Customers')" class="grid mt-2">
+                    <flux:navlist.item icon="users" :href="route('customer.index')"
+                                       :current="request()->routeIs('customer.*')" wire:navigate>
+                        {{ __('Customers') }}
+                    </flux:navlist.item>
+                    <flux:navlist.item icon="folder" :href="route('customer-group.index')"
+                                       :current="request()->routeIs('customer-group.*')" wire:navigate>
+                        {{ __('Customer Groups') }}
+                    </flux:navlist.item>
+                </flux:navlist.group>
                 @php
                     $hasAnyChannel = \App\Models\NotificationChannel::query()->exists();
                     $hasWaUnofficial = \App\Models\NotificationChannel::where('auth_type', 'wa-unofficial')->exists();
@@ -37,6 +56,10 @@
                             <flux:navlist.item icon="bolt" :href="route('wa.automation')"
                                                :current="request()->routeIs('wa.automation')" wire:navigate>
                                 {{ __('Automation Config') }}
+                            </flux:navlist.item>
+                            <flux:navlist.item icon="book-open" :href="route('wa.docs')"
+                                               :current="request()->routeIs('wa.docs')">
+                                {{ __('Docs') }}
                             </flux:navlist.item>
                         </flux:navlist.group>
                     </flux:navlist>
