@@ -55,7 +55,6 @@
                                 </div>
                                 <div class="flex items-center">
                                     <flux:button size="xs" variant="danger" icon="trash" class="shrink-0" wire:click="openDelete('{{ $phone }}')">
-                                        <span class="sr-only">{{ __('Hapus') }}</span>
                                     </flux:button>
                                 </div>
                             </div>

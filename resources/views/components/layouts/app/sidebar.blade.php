@@ -57,6 +57,14 @@
                                                :current="request()->routeIs('wa.automation')" wire:navigate>
                                 {{ __('Automation Config') }}
                             </flux:navlist.item>
+                            <flux:navlist.item icon="beaker" :href="route('wa.playground.message')"
+                                               :current="request()->routeIs('wa.playground.message')" wire:navigate>
+                                {{ __('Playground Message') }}
+                            </flux:navlist.item>
+                            <flux:navlist.item icon="puzzle-piece" :href="route('wa.plugins')"
+                                               :current="request()->routeIs('wa.plugins')" wire:navigate>
+                                {{ __('Plugins') }}
+                            </flux:navlist.item>
                             <flux:navlist.item icon="book-open" :href="route('wa.docs')"
                                                :current="request()->routeIs('wa.docs')">
                                 {{ __('Docs') }}

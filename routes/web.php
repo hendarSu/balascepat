@@ -70,6 +70,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/wa/session', App\Livewire\Wa\Session::class)->name('wa.session');
     Route::get('/wa/automation', App\Livewire\Wa\Automation::class)->name('wa.automation');
     Route::view('/wa/docs', 'wa.docs')->name('wa.docs');
+    Route::get('/wa/playground-message', App\Livewire\Wa\PlaygroundMessage::class)->name('wa.playground.message');
+    Route::view('/wa/plugins', 'wa.plugins')->name('wa.plugins');
 
     // Broadcasts
     Route::get('/broadcasts', App\Livewire\Broadcast\Form::class)->name('broadcast.form');
