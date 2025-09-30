@@ -64,7 +64,7 @@ class PlaygroundMessage extends Component
     {
         $this->clients = [];
         foreach ($this->channels as $ch) {
-            $this->channel = NotificationChannel::find($ch['id']);
+            $this->channel = NotificationChannel::forCurrentUser()->find($ch['id']);
             $this->baseUrl = rtrim((string) ($this->channel->base_url ?? ''), '/');
             if (!$this->channel || !$this->baseUrl) continue;
             try {
@@ -118,7 +118,7 @@ class PlaygroundMessage extends Component
         [$cid, $client] = array_pad(explode('::', $this->selectedClient, 2), 2, null);
         if (!$cid || !$client) return;
         $this->channel_id = (int) $cid;
-        $this->channel = NotificationChannel::find($this->channel_id);
+        $this->channel = NotificationChannel::forCurrentUser()->find($this->channel_id);
         if ($this->channel) {
             $this->baseUrl = rtrim((string) $this->channel->base_url, '/');
             $this->clientId = $client;

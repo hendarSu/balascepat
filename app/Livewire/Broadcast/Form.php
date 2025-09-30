@@ -38,7 +38,7 @@ class Form extends Component
 
     private function currentChannel(): ?NotificationChannel
     {
-        return $this->channel_id ? NotificationChannel::find($this->channel_id) : null;
+        return $this->channel_id ? NotificationChannel::forCurrentUser()->find($this->channel_id) : null;
     }
 
     private function headersFor(?NotificationChannel $ch): array
