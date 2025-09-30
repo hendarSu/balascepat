@@ -27,7 +27,7 @@ class Form extends Component
             'headers_value' => ['nullable', 'string'],
         ];
 
-        if (in_array($this->auth_type, ['header', 'wa-unofficial'], true)) {
+        if (in_array($this->auth_type, ['header', 'wa-unofficial'], true) && $this->type !== 'n8n') {
             $rules['headers_key'] = ['required', 'string', 'max:255'];
             $rules['headers_value'] = ['required', 'string'];
         }
