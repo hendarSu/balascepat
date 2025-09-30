@@ -37,6 +37,11 @@
                                     <flux:button size="sm">{{ __('Edit') }}</flux:button>
                                 </flux:link>
                                 <flux:button size="sm" variant="danger" wire:click="delete({{ $channel->id }})" onclick="if(!confirm('{{ __('Hapus channel ini?') }}')) return false;">{{ __('Hapus') }}</flux:button>
+                                @if($channel->type === 'n8n')
+                                    <flux:link :href="route('n8n.show')" wire:navigate>
+                                        <flux:button size="sm" variant="ghost">{{ __('Detail') }}</flux:button>
+                                    </flux:link>
+                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -56,6 +61,15 @@
                     <div class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{{ __('Integrasi WhatsApp Unofficial dengan autentikasi via Header.') }}</div>
                     <div class="mt-4">
                         <flux:link :href="route('notification-channel.create', ['type' => 'wa-unofficial'])" wire:navigate>
+                            <flux:button size="sm" variant="primary">{{ __('Integration') }}</flux:button>
+                        </flux:link>
+                    </div>
+                </div>
+                <div class="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-zinc-900">
+                    <div class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{{ __('N8N') }}</div>
+                    <div class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{{ __('Simpan akses ke N8N server.') }}</div>
+                    <div class="mt-4">
+                        <flux:link :href="route('notification-channel.create', ['type' => 'n8n'])" wire:navigate>
                             <flux:button size="sm" variant="primary">{{ __('Integration') }}</flux:button>
                         </flux:link>
                     </div>

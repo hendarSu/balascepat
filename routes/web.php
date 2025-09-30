@@ -88,4 +88,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/customers/create', App\Livewire\Customer\Form::class)->name('customer.create');
     Route::get('/customers/{id}/edit', App\Livewire\Customer\Form::class)->name('customer.edit');
     Route::get('/customers/import', App\Livewire\Customer\Import::class)->name('customer.import');
+
+    // N8N detail page
+    Route::get('/n8n', App\Livewire\N8n\Show::class)->name('n8n.show');
+    Route::any('/n8n/embed/{path?}', App\Http\Controllers\N8nEmbedController::class)
+        ->where('path', '.*')
+        ->name('n8n.embed');
 });

@@ -17,10 +17,7 @@
             <flux:navlist.group :heading="__('Platform')" class="grid">
                 <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
                                    wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                <flux:navlist.item icon="chat-bubble-bottom-center-text" :href="route('notification-channel.index')"
-                                   :current="request()->routeIs('notification-channel.*')" wire:navigate>
-                    {{ __('Notification Setting') }}
-                </flux:navlist.item>
+
                 <flux:navlist.item icon="megaphone" :href="route('broadcast.form')"
                                    :current="request()->routeIs('broadcast.form')" wire:navigate>
                     {{ __('Broadcast') }}
@@ -43,11 +40,25 @@
                         {{ __('Customer Groups') }}
                     </flux:navlist.item>
                 </flux:navlist.group>
+                <flux:navlist.group :heading="__('Channels')" class="grid mt-2">
+                    <flux:navlist.item icon="plus" :href="route('notification-channel.create', ['type' => 'n8n'])"
+                                       :current="request()->fullUrlIs(route('notification-channel.create', ['type' => 'n8n']))"
+                                       wire:navigate>
+                        {{ __('Create N8N Channel') }}
+                    </flux:navlist.item>
+                    <flux:navlist.item icon="chat-bubble-bottom-center-text" :href="route('notification-channel.index')"
+                                       :current="request()->routeIs('notification-channel.*')" wire:navigate>
+                        {{ __('Notification Setting') }}
+                    </flux:navlist.item>
+                </flux:navlist.group>
                 @php
-                    $hasAnyChannel = \App\Models\NotificationChannel::forCurrentUser()->exists();
-                    $hasWaUnofficial = \App\Models\NotificationChannel::forCurrentUser()->ofType('wa_unoffical')->exists();
+                    // Show WA Unofficial menu only if channel type is 'wa_unofficial'
+                    // Keep backward compatibility for legacy typo 'wa_unoffical'
+                    $hasWaUnofficial = \App\Models\NotificationChannel::forCurrentUser()
+                        ->whereIn('type', ['wa_unofficial', 'wa_unoffical'])
+                        ->exists();
                 @endphp
-                @if($hasAnyChannel || $hasWaUnofficial)
+                @if($hasWaUnofficial)
                     <flux:navlist variant="outline" class="mt-2">
                         <flux:navlist.group :heading="__('WA Unofficial')" class="grid">
                             <flux:navlist.item icon="chat-bubble-left-right" :href="route('wa.session')"
