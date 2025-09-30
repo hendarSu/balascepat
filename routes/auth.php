@@ -3,10 +3,15 @@
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
+use App\Http\Controllers\Auth\LoginController;
 
 Route::middleware('guest')->group(function () {
     Volt::route('login', 'auth.login')
         ->name('login');
+
+    // Fallback POST route for when Livewire scripts are not loaded
+    Route::post('login', [LoginController::class, 'store'])
+        ->name('login.post');
 
     Volt::route('register', 'auth.register')
         ->name('register');
