@@ -44,8 +44,8 @@
                     </flux:navlist.item>
                 </flux:navlist.group>
                 @php
-                    $hasAnyChannel = \App\Models\NotificationChannel::query()->exists();
-                    $hasWaUnofficial = \App\Models\NotificationChannel::where('auth_type', 'wa-unofficial')->exists();
+                    $hasAnyChannel = \App\Models\NotificationChannel::forCurrentUser()->exists();
+                    $hasWaUnofficial = \App\Models\NotificationChannel::forCurrentUser()->ofType('wa_unoffical')->exists();
                 @endphp
                 @if($hasAnyChannel || $hasWaUnofficial)
                     <flux:navlist variant="outline" class="mt-2">
