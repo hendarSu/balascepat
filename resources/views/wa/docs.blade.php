@@ -4,7 +4,7 @@
     ['label' => __('Docs')],
 ]">
     @php
-        $channel = \App\Models\NotificationChannel::where('auth_type', 'wa-unofficial')->first();
+        $channel = \App\Models\NotificationChannel::forCurrentUser()->ofType('wa_unoffical')->first();
         $base = $channel ? rtrim((string) $channel->base_url, '/') : 'http://localhost:3100';
         $docsUrl = $base . '/docs/';
     @endphp
@@ -41,4 +41,3 @@
         });
     </script>
 </x-layouts.app>
-
