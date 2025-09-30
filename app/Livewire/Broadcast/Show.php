@@ -18,7 +18,7 @@ class Show extends Component
         $this->broadcast = BroadcastModel::with('channel')->findOrFail($id);
 
         // Only fetch remote details for WA Unofficial and if external_id exists
-        if ($this->broadcast->channel && $this->broadcast->channel->auth_type === 'wa-unofficial' && $this->broadcast->external_id) {
+        if ($this->broadcast->channel && $this->broadcast->channel->type === 'wa_unoffical' && $this->broadcast->external_id) {
             $base = rtrim((string) $this->broadcast->channel->base_url, '/');
             $headers = ['accept' => 'application/json'];
             if ($this->broadcast->channel->headers_key && $this->broadcast->channel->headers_value) {

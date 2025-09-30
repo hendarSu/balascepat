@@ -25,8 +25,9 @@ class PlaygroundMessage extends Component
 
     public function mount(): void
     {
-        $this->channels = NotificationChannel::where('auth_type', 'wa-unofficial')
-            ->orderBy('name')->get(['id','name','base_url','headers_key','headers_value','auth_type'])->toArray();
+        $this->channels = NotificationChannel::forCurrentUser()
+            ->ofType('wa_unoffical')
+            ->orderBy('name')->get(['id','name','base_url','headers_key','headers_value','type'])->toArray();
         $this->loadClients();
         if (!empty($this->clients)) {
             $this->selectedClient = $this->clients[0]['value'] ?? null;

@@ -21,7 +21,7 @@ class Session extends Component
 
     public function mount(): void
     {
-        $this->channel = NotificationChannel::where('auth_type', 'wa-unofficial')->first();
+        $this->channel = NotificationChannel::forCurrentUser()->ofType('wa_unoffical')->first();
         if ($this->channel) {
             $this->baseUrl = rtrim((string) $this->channel->base_url, '/');
             $this->refreshSessions(silent: true);

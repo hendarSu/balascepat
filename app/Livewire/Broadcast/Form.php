@@ -26,7 +26,8 @@ class Form extends Component
 
     public function mount(): void
     {
-        $this->channels = NotificationChannel::orderBy('name')->get(['id','name','auth_type','base_url','headers_key','headers_value'])->toArray();
+        $this->channels = NotificationChannel::forCurrentUser()
+            ->orderBy('name')->get(['id','name','auth_type','base_url','headers_key','headers_value','type'])->toArray();
         $this->groups = CustomerGroup::orderBy('name')->get(['id','name'])->toArray();
     }
 
@@ -73,7 +74,7 @@ class Form extends Component
         $this->clientId = null;
         $ch = $this->currentChannel();
         if (!$ch) return;
-        if ($ch->auth_type !== 'wa-unofficial') return; // only fetch for WA
+        if ($ch->type !== 'wa_unoffical') return; // only fetch for WA
         $base = rtrim((string) $ch->base_url, '/');
         try {
             $resp = Http::withHeaders($this->headersFor($ch))->get($base . '/accounts');
@@ -124,7 +125,7 @@ class Form extends Component
         }
 
         $payload = null; $statusOk = false; $remoteId = null;
-        if ($ch->auth_type === 'wa-unofficial') {
+        if ($ch->type === 'wa_unoffical') {
             if (!$this->clientId) {
                 session()->flash('error', __('Pilih akun (clientId) untuk WA Unofficial.'));
                 return;

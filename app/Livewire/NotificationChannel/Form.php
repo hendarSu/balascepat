@@ -12,6 +12,7 @@ class Form extends Component
     public $headers_key;
     public $headers_value;
     public $auth_type;
+    public $type; // derived channel type (e.g., wa_unoffical)
 
     protected function rules(): array
     {
@@ -41,6 +42,7 @@ class Form extends Component
             $this->headers_key = $channel->headers_key;
             $this->headers_value = $channel->headers_value;
             $this->auth_type = $channel->auth_type;
+            $this->type = $channel->type;
         } else {
             $type = request()->query('type');
             if (in_array($type, ['header', 'wa-unofficial'], true)) {
@@ -49,22 +51,35 @@ class Form extends Component
                     $this->name = 'WA Unofficial';
                 }
             }
+            // Map to new type column
+            $this->type = $this->auth_type === 'wa-unofficial' ? 'wa_unoffical' : 'custom';
         }
     }
 
     public function save()
     {
         $this->validate();
-        NotificationChannel::updateOrCreate(
-            ['id' => $this->channelId],
-            [
-                'name' => $this->name,
-                'base_url' => $this->base_url,
-                'headers_key' => $this->headers_key,
-                'headers_value' => $this->headers_value,
-                'auth_type' => $this->auth_type,
-            ]
-        );
+        $type = $this->auth_type === 'wa-unofficial' ? 'wa_unoffical' : ($this->type ?: 'custom');
+        $attrs = [
+            'user_id' => auth()->id(),
+            'type' => $type,
+            'name' => $this->name,
+            'base_url' => $this->base_url,
+            'headers_key' => $this->headers_key,
+            'headers_value' => $this->headers_value,
+            'auth_type' => $this->auth_type,
+        ];
+        if ($this->channelId) {
+            NotificationChannel::where('id', $this->channelId)
+                ->where('user_id', auth()->id())
+                ->update($attrs);
+        } else {
+            // One per user per type
+            NotificationChannel::updateOrCreate(
+                ['user_id' => auth()->id(), 'type' => $type],
+                $attrs
+            );
+        }
         return redirect()->route('notification-channel.index');
     }
 

@@ -10,7 +10,7 @@ class Index extends Component
 
     public function mount()
     {
-        $this->channels = NotificationChannel::all();
+        $this->channels = NotificationChannel::forCurrentUser()->get();
     }
 
     public function delete(int $id): void
@@ -21,7 +21,7 @@ class Index extends Component
         session()->flash('success', __('Channel deleted successfully.'));
 
         // Refresh the list without a full redirect
-        $this->channels = NotificationChannel::all();
+        $this->channels = NotificationChannel::forCurrentUser()->get();
     }
 
     public function render()
