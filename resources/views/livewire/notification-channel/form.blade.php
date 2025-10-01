@@ -13,7 +13,8 @@
                 <flux:input type="text" wire:model.defer="base_url" required />
                 @error('base_url') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
             </flux:field>
-            @if($type === 'wa-unofficial')
+            {{-- WA Unofficial: use auth_type selector + required headers --}}
+            @if(($auth_type ?? null) === 'wa-unofficial' || ($type ?? null) === 'wa_unoffical')
                 <flux:field>
                     <flux:label>{{ __('Auth Type') }}</flux:label>
                     <select wire:model="auth_type"
@@ -26,21 +27,33 @@
                 </flux:field>
                 <flux:field>
                     <flux:label>{{ __('Headers Key') }}</flux:label>
-                    <flux:input type="text" wire:model.defer="headers_key" @if($type !== 'n8n') required @endif />
+                    <flux:input type="text" wire:model.defer="headers_key" required />
                     @error('headers_key') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                 </flux:field>
                 <flux:field>
                     <flux:label>{{ __('Headers Value') }}</flux:label>
-                    <flux:input type="text" wire:model.defer="headers_value" @if($type !== 'n8n') required @endif />
+                    <flux:input type="text" wire:model.defer="headers_value" required />
                     @error('headers_value') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                 </flux:field>
-                @if($type === 'n8n')
-                    <div class="text-xs text-neutral-500">
-                        {{ __('Untuk N8N, header API Key bersifat opsional (gunakan jika perlu).') }}</div>
-                @endif
             @endif
 
-            @if($type === 'n8n')
+            {{-- N8N: optional header (X-N8N-API-Key) + optional credentials --}}
+            @if(($type ?? null) === 'n8n')
+                <div class="mt-2 border-t border-neutral-200 dark:border-neutral-700"></div>
+                <flux:subheading>{{ __('N8N Authentication (optional)') }}</flux:subheading>
+                <p class="text-xs text-neutral-500 mb-2">{{ __('Anda dapat menggunakan Header API Key atau Username/Password (self-hosted).') }}</p>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <flux:field>
+                        <flux:label>{{ __('Headers Key') }}</flux:label>
+                        <flux:input type="text" wire:model.defer="headers_key" placeholder="X-N8N-API-Key" />
+                        @error('headers_key') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>{{ __('Headers Value') }}</flux:label>
+                        <flux:input type="text" wire:model.defer="headers_value" />
+                        @error('headers_value') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </flux:field>
+                </div>
                 <div class="mt-2 border-t border-neutral-200 dark:border-neutral-700"></div>
                 <flux:subheading>{{ __('N8N Credentials (optional)') }}</flux:subheading>
                 <flux:field>
