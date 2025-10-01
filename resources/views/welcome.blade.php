@@ -201,7 +201,7 @@
                         </ul>
                         <div class="mt-6">
                             @php($contact = config('mail.from.address'))
-                            <a href="{{ $contact ? 'mailto:'.$contact : '#' }}" class="inline-flex w-full items-center justify-center rounded-md border px-4 py-2.5 font-semibold text-gray-800 hover:bg-gray-50">
+                            <a href="{{ $contact ? 'mailto:'.$contact : '#' }}" class="inline-flex w-full items-center justify-center rounded-md border px-4 py-2.5 font-semibold text-gray-800 hover:bg-gray-50" style="margin-top: 62px;">
                                 Kontak Admin
                             </a>
                         </div>
