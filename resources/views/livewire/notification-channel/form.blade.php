@@ -40,8 +40,6 @@
             {{-- N8N: optional header (X-N8N-API-Key) + optional credentials --}}
             @if(($type ?? null) === 'n8n')
                 <div class="mt-2 border-t border-neutral-200 dark:border-neutral-700"></div>
-                <flux:subheading>{{ __('N8N Authentication (optional)') }}</flux:subheading>
-                <p class="text-xs text-neutral-500 mb-2">{{ __('Anda dapat menggunakan Header API Key atau Username/Password (self-hosted).') }}</p>
                 <flux:subheading>{{ __('N8N Credentials (optional)') }}</flux:subheading>
                 <flux:field>
                     <flux:label>{{ __('Username / Email') }}</flux:label>
