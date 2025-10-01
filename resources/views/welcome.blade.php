@@ -151,7 +151,7 @@
                         <ul class="mt-5 space-y-2 text-sm text-gray-700">
                             <li>• Session & Automation WA</li>
                             <li>• Playground Pesan</li>
-                            <li>• Dokumentasi & Plugins</li>
+                            <li>• Integration API & Plugins Webstore</li>
                             <li>• Broadcast WhatsApp + Riwayat</li>
                             <li>• Pelanggan & Grup</li>
                             <li>• Channel Notifikasi: WA Unofficial (Header)</li>
