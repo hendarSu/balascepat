@@ -148,6 +148,83 @@
             </section>
         </main>
 
+        <!-- Pricing -->
+        <section class="py-16">
+            <div class="max-w-7xl mx-auto px-6">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 text-center">Paket Harga</h2>
+                <p class="mt-2 text-center text-gray-600">Pilih paket sesuai kebutuhan operasional Anda</p>
+
+                <div class="mt-10 grid gap-6 md:grid-cols-3">
+                    <!-- WA Service -->
+                    <div class="rounded-2xl border bg-white p-6 shadow-sm">
+                        <div class="text-sm font-semibold text-green-700">Layanan WA</div>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <div class="text-3xl font-extrabold text-gray-900">Rp99K</div>
+                            <div class="text-gray-500">/ bulan</div>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-600">Fitur WA Unofficial untuk operasional inti</p>
+                        <ul class="mt-5 space-y-2 text-sm text-gray-700">
+                            <li>• Session & Automation WA</li>
+                            <li>• Playground Pesan</li>
+                            <li>• Dokumentasi & Plugins</li>
+                            <li>• Broadcast WhatsApp + Riwayat</li>
+                            <li>• Pelanggan & Grup</li>
+                            <li>• Channel Notifikasi: WA Unofficial (Header)</li>
+                        </ul>
+                        <div class="mt-6">
+                            <a href="{{ route('register') }}" class="js-lead-cta inline-flex w-full items-center justify-center rounded-md bg-green-600 px-4 py-2.5 font-semibold text-white hover:bg-green-700">
+                                Pilih Paket
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- WA + N8N -->
+                    <div class="rounded-2xl border-2 border-green-600 bg-white p-6 shadow-sm">
+                        <div class="inline-flex items-center gap-2">
+                            <div class="text-sm font-semibold text-green-700">WA + Integrasi N8N</div>
+                            <span class="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-semibold text-green-700">Paling Populer</span>
+                        </div>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <div class="text-3xl font-extrabold text-gray-900">Rp199K</div>
+                            <div class="text-gray-500">/ bulan</div>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-600">Semua fitur WA, plus workflow otomatis via N8N</p>
+                        <ul class="mt-5 mb-5 space-y-2 text-sm text-gray-700">
+                            <li>• Semua fitur paket WA</li>
+                            <li>• Integrasi N8N (embed workflow & detail)</li>
+                            <li>• Channel Notifikasi: N8N</li>
+                            <li>• Otomasi lanjutan via workflow</li>
+                        </ul>
+                        <div class="mt-10">
+                            <a href="{{ route('register') }}" class="js-lead-cta inline-flex w-full items-center justify-center rounded-md bg-green-600 px-4 py-2.5 font-semibold text-white hover:bg-green-700" style="margin-top: 35px;">
+                                Pilih Paket
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Custom / Enterprise -->
+                    <div class="rounded-2xl border bg-white p-6 shadow-sm">
+                        <div class="text-sm font-semibold text-green-700">Custom / Enterprise</div>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <div class="text-3xl font-extrabold text-gray-900">Kebutuhan Khusus</div>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-600">Konsultasi kebutuhan, SLA, dan dukungan implementasi</p>
+                        <ul class="mt-5 space-y-2 text-sm text-gray-700">
+                            <li>• Penyesuaian alur & integrasi</li>
+                            <li>• Bantuan migrasi & onboarding</li>
+                            <li>• Dukungan prioritas & SLA</li>
+                        </ul>
+                        <div class="mt-6">
+                            @php($contact = config('mail.from.address'))
+                            <a href="{{ $contact ? 'mailto:'.$contact : '#' }}" class="inline-flex w-full items-center justify-center rounded-md border px-4 py-2.5 font-semibold text-gray-800 hover:bg-gray-50">
+                                Kontak Admin
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <footer class="py-8">
             <div class="max-w-7xl mx-auto px-6 text-sm text-gray-500 flex items-center justify-between">
                 <div>© {{ date('Y') }} {{ config('app.name', 'BalasCepat') }}</div>
