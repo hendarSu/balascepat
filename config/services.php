@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    // Meta Pixel (Facebook)
+    'meta_pixel' => [
+        'enabled' => (bool) env('META_PIXEL_ENABLED', false),
+        'id' => env('META_PIXEL_ID'),
+    ],
+
 ];

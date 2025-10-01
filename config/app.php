@@ -15,6 +15,9 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    // Short marketing description for landing/meta tags
+    'description' => env('APP_DESCRIPTION', env('LANDING_META_DESCRIPTION', 'Platform otomasi pesan, broadcast WhatsApp, pelanggan & grup, integrasi N8N.')),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
