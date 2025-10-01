@@ -13,18 +13,17 @@
                 <flux:input type="text" wire:model.defer="base_url" required />
                 @error('base_url') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
             </flux:field>
-            <flux:field>
-                <flux:label>{{ __('Auth Type') }}</flux:label>
-                <select wire:model="auth_type"
-                        class="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-200 dark:border-neutral-700 dark:bg-zinc-900 dark:text-neutral-100">
-                    <option value="">{{ __('None') }}</option>
-                    <option value="header">{{ __('Header') }}</option>
-                    <option value="wa-unofficial">{{ __('WA Unofficial (Header Auth)') }}</option>
-                </select>
-                @error('auth_type') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-            </flux:field>
-
-            @if($auth_type === 'header' || $auth_type === 'wa-unofficial')
+            @if($type === 'wa-unofficial')
+                <flux:field>
+                    <flux:label>{{ __('Auth Type') }}</flux:label>
+                    <select wire:model="auth_type"
+                            class="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-200 dark:border-neutral-700 dark:bg-zinc-900 dark:text-neutral-100">
+                        <option value="">{{ __('None') }}</option>
+                        <option value="header">{{ __('Header') }}</option>
+                        <option value="wa-unofficial">{{ __('WA Unofficial (Header Auth)') }}</option>
+                    </select>
+                    @error('auth_type') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                </flux:field>
                 <flux:field>
                     <flux:label>{{ __('Headers Key') }}</flux:label>
                     <flux:input type="text" wire:model.defer="headers_key" @if($type !== 'n8n') required @endif />
@@ -36,7 +35,8 @@
                     @error('headers_value') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                 </flux:field>
                 @if($type === 'n8n')
-                    <div class="text-xs text-neutral-500">{{ __('Untuk N8N, header API Key bersifat opsional (gunakan jika perlu).') }}</div>
+                    <div class="text-xs text-neutral-500">
+                        {{ __('Untuk N8N, header API Key bersifat opsional (gunakan jika perlu).') }}</div>
                 @endif
             @endif
 
