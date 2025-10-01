@@ -41,11 +41,6 @@
                     </flux:navlist.item>
                 </flux:navlist.group>
                 <flux:navlist.group :heading="__('Channels')" class="grid mt-2">
-                    <flux:navlist.item icon="plus" :href="route('notification-channel.create', ['type' => 'n8n'])"
-                                       :current="request()->fullUrlIs(route('notification-channel.create', ['type' => 'n8n']))"
-                                       wire:navigate>
-                        {{ __('Create N8N Channel') }}
-                    </flux:navlist.item>
                     <flux:navlist.item icon="chat-bubble-bottom-center-text" :href="route('notification-channel.index')"
                                        :current="request()->routeIs('notification-channel.*')" wire:navigate>
                         {{ __('Notification Setting') }}
