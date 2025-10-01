@@ -42,19 +42,6 @@
                 <div class="mt-2 border-t border-neutral-200 dark:border-neutral-700"></div>
                 <flux:subheading>{{ __('N8N Authentication (optional)') }}</flux:subheading>
                 <p class="text-xs text-neutral-500 mb-2">{{ __('Anda dapat menggunakan Header API Key atau Username/Password (self-hosted).') }}</p>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <flux:field>
-                        <flux:label>{{ __('Headers Key') }}</flux:label>
-                        <flux:input type="text" wire:model.defer="headers_key" placeholder="X-N8N-API-Key" />
-                        @error('headers_key') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>{{ __('Headers Value') }}</flux:label>
-                        <flux:input type="text" wire:model.defer="headers_value" />
-                        @error('headers_value') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                    </flux:field>
-                </div>
-                <div class="mt-2 border-t border-neutral-200 dark:border-neutral-700"></div>
                 <flux:subheading>{{ __('N8N Credentials (optional)') }}</flux:subheading>
                 <flux:field>
                     <flux:label>{{ __('Username / Email') }}</flux:label>
