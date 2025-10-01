@@ -74,22 +74,7 @@
                         <p class="mt-3 text-xs text-gray-500">Tidak perlu kartu kredit.</p>
                     </div>
                     <div class="relative">
-                        <div class="rounded-xl border bg-white shadow-sm p-4">
-                            <div class="grid grid-cols-2 gap-3 text-sm">
-                                <div class="p-3 rounded-lg bg-green-50">
-                                    <div class="font-semibold text-green-700">Broadcast</div>
-                                    <div class="text-gray-600">Kirim kampanye dan pantau riwayat</div>
-                                </div>
-                                <div class="p-3 rounded-lg bg-green-50">
-                                    <div class="font-semibold text-green-700">Otomasi WA</div>
-                                    <div class="text-gray-600">Sesi, automation, dan plugin</div>
-                                </div>
-                                <div class="p-3 rounded-lg bg-green-50">
-                                    <div class="font-semibold text-green-700">Pelanggan & Grup</div>
-                                    <div class="text-gray-600">Kelola & impor data pelanggan</div>
-                                </div>
-                            </div>
-                        </div>
+                        <img src="/heros.png" alt="Ilustrasi fitur BalasCepat" class="rounded-xl border bg-white shadow-sm w-full h-auto" loading="lazy">
                     </div>
                 </div>
             </section>
